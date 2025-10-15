@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicSense - Voice Your Concerns</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .location-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            background: #e8eaf6;
+            border-color: #764ba2;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .form-card {
+                padding: 25px;
+            }
+
+            .location-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            color: #333;
+            font-size: 0.9em;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ CivicSense</h1>
+            <p>Your Voice Matters - Report Civic Issues</p>
+        </div>
+
+        <div class="form-card">
+            <div class="info-box">
+                <p>📝 Help us improve your community by reporting civic issues. Your grievance will be recorded and analyzed for better governance.</p>
+            </div>
+
+            <div class="success-message" id="successMsg">
+                ✅ Thank you! Your grievance has been submitted successfully. Ticket ID: <strong id="ticketId"></strong>
+            </div>
+
+            <div class="error-message" id="errorMsg">
+                ❌ There was an error submitting your grievance. Please try again.
+            </div>
+
+            <form id="grievanceForm">
+                <div class="form-group">
+                    <label for="name">Full Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone" name="phone" required placeholder="+91 XXXXX XXXXX">
+                </div>
+
+                <div class="form-group">
+                    <label>Location <span class="required">*</span></label>
+                    <div class="location-group">
+                        <div>
+                            <select id="country" name="country" required>
+                                <option value="">Country</option>
+                                <option value="India" selected>India</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="state" name="state" required>
+                                <option value="">Select State</option>
+                                <option value="Chandigarh">Chandigarh</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="Haryana">Haryana</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                                <option value="Karnataka">Karnataka</option>
+                                <option value="Tamil Nadu">Tamil Nadu</option>
+                                <option value="West Bengal">West Bengal</option>
+                                <option value="Gujarat">Gujarat</option>
+                                <option value="Rajasthan">Rajasthan</option>
+                                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="text" id="city" name="city" required placeholder="City">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category <span class="required">*</span></label>
+                    <select id="category" name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="Roads & Infrastructure">Roads & Infrastructure</option>
+                        <option value="Water Supply">Water Supply</option>
+                        <option value="Waste Management">Waste Management</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Public Transport">Public Transport</option>
+                        <option value="Street Lights">Street Lights</option>
+                        <option value="Sewage & Drainage">Sewage & Drainage</option>
+                        <option value="Parks & Recreation">Parks & Recreation</option>
+                        <option value="Public Safety">Public Safety</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Education">Education</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="heading">Issue Title <span class="required">*</span></label>
+                    <input type="text" id="heading" name="heading" required placeholder="Brief title of your grievance">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description <span class="required">*</span></label>
+                    <textarea id="description" name="description" required placeholder="Describe your issue in detail..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="attachment">Attachment (Image/Document)</label>
+                    <div class="file-upload">
+                        <input type="file" id="attachment" name="attachment" accept="image/*,.pdf,.doc,.docx">
+                        <label for="attachment" class="file-upload-label">
+                            📎 Click to upload or drag & drop
+                        </label>
+                        <div class="file-name" id="fileName"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">Submit Grievance</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Generate unique Ticket ID
+        function generateTicketId() {
+            const timestamp = Date.now();
+            const random = Math.floor(Math.random() * 1000);
+            return `CS${timestamp}${random}`;
+        }
+
+        // Handle file upload display
+        document.getElementById('attachment').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || '';
+            document.getElementById('fileName').textContent = fileName ? `Selected: ${fileName}` : '';
+        });
+
+        // Form submission
+        document.getElementById('grievanceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const successMsg = document.getElementById('successMsg');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            // Hide previous messages
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            // Generate Ticket ID
+            const ticketId = generateTicketId();
+            
+            // Collect form data
+            const formData = {
+                ticketId: ticketId,
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                country: document.getElementById('country').value,
+                state: document.getElementById('state').value,
+                city: document.getElementById('city').value,
+                category: document.getElementById('category').value,
+                heading: document.getElementById('heading').value,
+                description: document.getElementById('description').value,
+                timestamp: new Date().toLocaleString(),
+                resolved: 'No'
+            };
+            
+            // Here you would normally send to Google Sheets
+            // For now, we'll simulate success
+            console.log('Form Data:', formData);
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Show success message
+                document.getElementById('ticketId').textContent = ticketId;
+                successMsg.style.display = 'block';
+                
+                // Reset form
+                document.getElementById('grievanceForm').reset();
+                document.getElementById('fileName').textContent = '';
+                
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Grievance';
+                
+                // Scroll to success message
+                successMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 1500);
+        });
+
+        // GOOGLE SHEETS INTEGRATION PLACEHOLDER
+        // Replace the URL below with your Google Apps Script Web App URL
+        const GOOGLE_SHEETS_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+        
+        /* 
+        To integrate with Google Sheets:
+        1. Create a Google Sheet with columns: Ticket ID, Name, Email, Phone, Country, State, City, Category, Heading, Description, Timestamp, Resolved
+        2. Go to Extensions > Apps Script
+        3. Paste the following code:
+        
+        function doPost(e) {
+          var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+          var data = JSON.parse(e.postData.contents);
+          
+          sheet.appendRow([
+            data.ticketId,
+            data.name,
+            data.email,
+            data.phone,
+            data.country,
+            data.state,
+            data.city,
+            data.category,
+            data.heading,
+            data.description,
+            data.timestamp,
+            data.resolved
+          ]);
+          
+          return ContentService.createTextOutput(JSON.stringify({success: true, ticketId: data.ticketId}))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+        
+        4. Deploy as Web App, set access to "Anyone"
+        5. Copy the Web App URL and replace GOOGLE_SHEETS_URL above
+        6. Uncomment the fetch code below to enable actual submission
+        */
+        
+        /*
+        // Uncomment this to enable actual Google Sheets submission
+        async function submitToGoogleSheets(formData) {
+            try {
+                const response = await fetch(GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                return true;
+            } catch (error) {
+                console.error('Error:', error);
+                return false;
+            }
+        }
+        */
+    </script>
+</body>
+</html>
