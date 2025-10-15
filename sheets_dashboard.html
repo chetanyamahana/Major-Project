@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicSense - Google Sheets Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.8s ease;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            color: #333;
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #667eea;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-resolved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .dashboard-card {
+                padding: 20px;
+            }
+
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ CivicSense Google Sheets Dashboard</h1>
+            <p>View Grievances Stored in Google Sheets</p>
+            <div style="margin-top: 10px;">
+                <a href="/" style="color: white; margin-right: 20px; text-decoration: underline;">Home</a>
+                <a href="/dashboard" style="color: white; text-decoration: underline;">Main Dashboard</a>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="info-box">
+                <p>This dashboard displays grievances directly from your Google Sheets database. Make sure to enter your Google Apps Script Web App URL below.</p>
+            </div>
+
+            <div>
+                <label for="sheetsUrl" style="display: block; margin-bottom: 10px; font-weight: 600;">Google Apps Script Web App URL:</label>
+                <input type="text" id="sheetsUrl" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px;" placeholder="Enter your Google Apps Script Web App URL">
+                <button class="btn" id="loadBtn">Load Data</button>
+                <button class="btn" id="refreshBtn" style="display: none;">Refresh Data</button>
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+                <p>Loading data from Google Sheets...</p>
+            </div>
+
+            <div id="tableContainer" style="overflow-x: auto; display: none;">
+                <table id="grievanceTable">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Heading</th>
+                            <th>Location</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grievanceTableBody">
+                        <!-- Data will be populated via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="errorMessage" style="color: #721c24; background-color: #f8d7da; padding: 15px; border-radius: 5px; margin-top: 20px; display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const sheetsUrlInput = document.getElementById('sheetsUrl');
+        const loadBtn = document.getElementById('loadBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const tableContainer = document.getElementById('tableContainer');
+        const grievanceTableBody = document.getElementById('grievanceTableBody');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Check if we have a saved URL in localStorage
+        const savedUrl = localStorage.getItem('googleSheetsUrl');
+        if (savedUrl) {
+            sheetsUrlInput.value = savedUrl;
+        }
+
+        // Event listeners
+        loadBtn.addEventListener('click', loadData);
+        refreshBtn.addEventListener('click', loadData);
+
+        async function loadData() {
+            const url = sheetsUrlInput.value.trim();
+            
+            if (!url) {
+                showError('Please enter a valid Google Apps Script Web App URL');
+                return;
+            }
+
+            // Save URL to localStorage
+            localStorage.setItem('googleSheetsUrl', url);
+
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            tableContainer.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            try {
+                // Fetch data from Google Sheets
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // Display data
+                displayGrievances(data);
+                
+                // Show table and refresh button
+                tableContainer.style.display = 'block';
+                loadBtn.style.display = 'none';
+                refreshBtn.style.display = 'inline-block';
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('Failed to load data from Google Sheets. Make sure the URL is correct and the web app is deployed with proper permissions.');
+            } finally {
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        function displayGrievances(data) {
+            grievanceTableBody.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                showError('No grievances found in the Google Sheet');
+                return;
+            }
+
+            data.forEach(grievance => {
+                const row = document.createElement('tr');
+                
+                // Format location
+                const location = `${grievance.City || ''}, ${grievance.State || ''}`;
+                
+                // Format status
+                const status = grievance.Resolved === 'Yes' || grievance.Resolved === 'true' ? 
+                    '<span class="status-badge status-resolved">Resolved</span>' : 
+                    '<span class="status-badge status-pending">Pending</span>';
+                
+                row.innerHTML = `
+                    <td>${grievance['Ticket ID'] || ''}</td>
+                    <td>${grievance.Name || ''}</td>
+                    <td>${grievance.Category || ''}</td>
+                    <td>${grievance.Heading || ''}</td>
+                    <td>${location}</td>
+                    <td>${grievance.Timestamp || ''}</td>
+                    <td>${status}</td>
+                `;
+                
+                grievanceTableBody.appendChild(row);
+            });
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        // Auto-load if URL is already saved
+        if (savedUrl) {
+            loadData();
+        }
+    </script>
+</body>
+</html>
